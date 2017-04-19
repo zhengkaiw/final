@@ -109,13 +109,12 @@ public class AddVehicle extends JFrame {
 		bottomPanel.setLayout(flow);
 		
 
-		Font f1 = new Font("Meiryo UI",Font.BOLD, 20);
-		Font f2 = new Font("Meiryo UI", Font.BOLD, 40);
-		Font f3 = new Font("Meiryo UI", Font.BOLD, 30);
+		Font f1 = new Font("Meiryo UI",Font.PLAIN, 20);
+		Font f2 = new Font("Meiryo UI", Font.PLAIN, 40);
+		Font f3 = new Font("Meiryo UI", Font.PLAIN, 30);
 		changeFont(con,f1);
 		
-		//headPanel.setBackground(Color.ORANGE);
-		headline.setForeground(Color.RED);
+		//headline.setForeground(Color.RED);
 		headline.setFont(f2);
 		
 		categoryCB.setBackground(Color.WHITE);
@@ -127,6 +126,7 @@ public class AddVehicle extends JFrame {
 		confirmButton.setBackground(Color.RED);
 		confirmButton.setForeground(Color.WHITE);
 		confirmButton.setFont(f3);
+
 
 
 	}
