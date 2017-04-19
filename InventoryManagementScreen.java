@@ -10,7 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Vector;
 
-//¸ü¸ÄÁËÒ»Ğ©±äÁ¿Ãû£¬Ö±½ÓÊ¹ÓÃVehicleÀà£¬Ôö¼ÓÁËÏàÓ¦²ÎÊı£¬µ÷ÕûÁËÀàĞÍºÍË³Ğò¡£
+//æ›´æ”¹äº†ä¸€äº›å˜é‡åï¼Œç›´æ¥ä½¿ç”¨Vehicleç±»ï¼Œå¢åŠ äº†ç›¸åº”å‚æ•°ï¼Œè°ƒæ•´äº†ç±»å‹å’Œé¡ºåºã€‚
+//update4.19:è°ƒæ•´äº†ç®€å•çš„æ ·å¼ï¼Œé—®é¢˜æ˜¯è¡¨æ ¼å¤§å°è°ƒä¸äº†ï¼Œåˆ—å®½ä¹Ÿè°ƒä¸äº†â€¦â€¦
 
 @SuppressWarnings("serial")
 public class InventoryManagementScreen extends JFrame {
@@ -23,7 +24,7 @@ public class InventoryManagementScreen extends JFrame {
     private JTable inventoryData;
     private JScrollPane inventoryPane;
     private JLabel dealerNameLabel;
-    private JButton avehicleButton;
+    private JButton addButton;
     private JButton updateButton;
     private JButton viewButton;
     private JButton deleteButton;
@@ -36,7 +37,7 @@ public class InventoryManagementScreen extends JFrame {
 
     public  InventoryManagementScreen(String dealerId) {
 
-        dealerNameLabel = new JLabel(dealerId);
+        dealerNameLabel = new JLabel(dealerId+" Inventory Management");
 
         Vehicles vehicles = new Vehicles();
         vehicles.addData("2228104413","gmps-aj-dohmann",Category.NEW,2014,"Cadillac","CTS Sedan","3.6L V6 AWD Luxury","CAR",57620.0f,"http://inventory-dmg.assets-cdk.com/5/1/7/13411480715x90.jpg");
@@ -45,8 +46,8 @@ public class InventoryManagementScreen extends JFrame {
         inventoryData.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         inventoryPane = new JScrollPane(inventoryData);
 
-        avehicleButton = new JButton("Add");
-        avehicleButton.addActionListener(new ActionListener() {
+        addButton = new JButton("Add");
+        addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 new AddVehicleToInventory();
@@ -59,16 +60,37 @@ public class InventoryManagementScreen extends JFrame {
         bottomPanel = new JPanel();
         topPanel.add(dealerNameLabel);
         midPanel.add(inventoryPane);
-        bottomPanel.add(avehicleButton);
+        bottomPanel.add(addButton);
         bottomPanel.add(updateButton);
-
+        
+        Font f1 = new Font("Meiryo UI",Font.PLAIN, 20);
+        inventoryData.setRowHeight(30);
+        inventoryData.setAutoCreateRowSorter(true);
+        inventoryData.setGridColor(Color.BLUE);
+        //inventoryPane.setSize(800, 500);
+   
+        Container con=getContentPane();
         setLayout(new BorderLayout(2, 2));
-        getContentPane().add("Center", midPanel);
-        getContentPane().add("South", bottomPanel);
+        con.add("North",topPanel);
+        con.add("Center", midPanel);
+        con.add("South", bottomPanel);
+        changeFont(con, f1);
         setVisible(true);
-        setSize(800, 550);
+        setSize(1000, 800);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        
+        
     }
+    
+    public void changeFont(Component component, Font font) {
+
+		component.setFont(font);
+		if (component instanceof Container) {
+			for (Component child : ((Container) component).getComponents()) {
+				changeFont(child, font);
+			}
+		}
+	}
 
    /* It's defined in other's file as class Vehicle. 
     * class Vehicle {
