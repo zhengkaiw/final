@@ -1,56 +1,88 @@
 package com.neu.jan17.UI;
+
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumnModel;
 
-import com.neu.jan17.data.Category;
-import com.neu.jan17.data.Vehicle;
+import com.neu.jan17.data.*;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Vector;
 
-//更改了一些变量名，直接使用Vehicle类，增加了相应参数，调整了类型和顺序。
-//update4.19:调整了简单的样式，问题是表格大小调不了，列宽也调不了……
-
-@SuppressWarnings("serial")
 public class InventoryManagementScreen extends JFrame {
 
 
     private JPanel totalPanel;
-    private JPanel topPanel;
-    private JPanel midPanel;
-    private JPanel bottomPanel;
+    private JPanel topPanel,midPanel,bottomPanel;
     private JTable inventoryData;
     private JScrollPane inventoryPane;
-    private JLabel dealerNameLabel;
+    private JLabel headline,dealerNameLabel;
+    private JComboBox dealerItem;
+    private JButton selectDealer;
     private JButton addButton;
     private JButton updateButton;
-    private JButton viewButton;
-    private JButton deleteButton;
+
+    protected Vehicles ve;
 
     public InventoryManagementScreen() {
+    	
+    	headline=new JLabel("Inventory Management");
 
-        Vehicles vehicles = new Vehicles();
+        Vector<Vehicle> vehicleData = new Vector<>();
 
-    }
+        dealerNameLabel = new JLabel("Please choose a dealer:");
 
-    public  InventoryManagementScreen(String dealerId) {
+        DealerData dd = new DealerData();
+        String[] dealerID = new String[dd.getDealersData().length];
+        for (int i = 0; i < dd.getDealersData().length; i++) {
+            dealerID[i] = dd.getDealersData()[i].getId().substring(5, dd.getDealersData()[i].getId().length());
+        }
+        dealerItem = new JComboBox(dealerID);
 
-        dealerNameLabel = new JLabel(dealerId+" Inventory Management");
+        ve = new Vehicles();
 
-        Vehicles vehicles = new Vehicles();
-        vehicles.addData("2228104413","gmps-aj-dohmann",Category.NEW,2014,"Cadillac","CTS Sedan","3.6L V6 AWD Luxury","CAR",57620.0f,"http://inventory-dmg.assets-cdk.com/5/1/7/13411480715x90.jpg");
-
-        inventoryData = new JTable(new dealerModel(vehicles));
+        inventoryData = new JTable(new dealerModel(ve));
+        inventoryData.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    int row = ((JTable) e.getSource()).rowAtPoint(e.getPoint());
+                    openEditUI(ve.showData(row), row);
+                } else {
+                    return;
+                }
+            }
+        });
         inventoryData.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+        resizeColumnWidth(inventoryData);
         inventoryPane = new JScrollPane(inventoryData);
 
-        addButton = new JButton("Add");
+        selectDealer = new JButton("Confirm");
+        selectDealer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String getDealerID = "";
+                getDealerID += "gmps-" + dealerItem.getSelectedItem();
+                try {
+                    ve.removeAll();
+                    for (Vehicle v : getVehicle(getDealerID).getVehicles()) {
+                        ve.addData(v);
+                    }
+                    repaint();
+                } catch (Exception unknowne) {
+                }
+            }
+        });
+        addButton = new JButton("  Add  ");
         addButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                new AddVehicleToInventory();
+                openAddUI();
             }
         });
         updateButton = new JButton("Update");
@@ -58,62 +90,85 @@ public class InventoryManagementScreen extends JFrame {
         topPanel = new JPanel();
         midPanel = new JPanel();
         bottomPanel = new JPanel();
+        
         topPanel.add(dealerNameLabel);
+        topPanel.add(dealerItem);
+        topPanel.add(selectDealer);
         midPanel.add(inventoryPane);
         bottomPanel.add(addButton);
         bottomPanel.add(updateButton);
-        
-        Font f1 = new Font("Meiryo UI",Font.PLAIN, 20);
-        inventoryData.setRowHeight(30);
+
+        Font f1 = new Font("Meiryo UI",Font.PLAIN, 15);
+        Font f2 = new Font("Meiryo UI",Font.PLAIN, 18);
+        Font f3 = new Font("Meiryo UI",Font.PLAIN, 20);
+        inventoryData.setRowHeight(25);
         inventoryData.setAutoCreateRowSorter(true);
-        inventoryData.setGridColor(Color.BLUE);
-        //inventoryPane.setSize(800, 500);
-   
-        Container con=getContentPane();
+        //inventoryData.setGridColor(Color.BLUE);
+        Dimension tableSize=new Dimension(700,600);
+        inventoryPane.setPreferredSize(tableSize);
+
+        Container con = getContentPane();
         setLayout(new BorderLayout(2, 2));
-        con.add("North",topPanel);
+        con.add("North", topPanel);
         con.add("Center", midPanel);
         con.add("South", bottomPanel);
-        changeFont(con, f1);
+        
+        topPanel.setBorder(BorderFactory.createEmptyBorder(50, 0, 20, 0));
+        midPanel.setBorder(BorderFactory.createEmptyBorder(0, 50, 20, 50));
+		bottomPanel.setBorder(BorderFactory.createEmptyBorder(20, 0, 50, 0));
+        
+        changeFont(con, f2);
+        //dealerNameLabel.setFont(f2);
+        addButton.setFont(f3);
+        updateButton.setFont(f3);
+        Dimension boxsize=new Dimension(150,30);
+        dealerItem.setPreferredSize(boxsize);
+        
         setVisible(true);
-        setSize(1000, 800);
+        setSize(900, 900);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        
-        
+
+
     }
-    
+
+    public Inventory getVehicle(String id) throws Exception {
+        InventoryManagerInterface imi = new InventoryManager("data");
+        Inventory inventory = imi.getInventoryByDealerId(id);
+        return inventory;
+    }
+
+    public void openAddUI() {
+        new AddVehicle(this);
+    }
+
+    public void openEditUI(Vehicle vehicle, int row) {
+        new AddVehicle(this, vehicle, row);
+    }
+
     public void changeFont(Component component, Font font) {
 
-		component.setFont(font);
-		if (component instanceof Container) {
-			for (Component child : ((Container) component).getComponents()) {
-				changeFont(child, font);
-			}
-		}
-	}
-
-   /* It's defined in other's file as class Vehicle. 
-    * class Vehicle {
-
-        private String category;
-        private String year;
-        private String make;
-        private String model;
-        private String trim;
-        private String type;
-        private String price;
-
-        Vehicle(String category, String year, String make, String model, String trim, String type, String price) {
-            this.category = category;
-            this.year = year;
-            this.make = make;
-            this.model = model;
-            this.trim = trim;
-            this.type = type;
-            this.price = price;
+        component.setFont(font);
+        if (component instanceof Container) {
+            for (Component child : ((Container) component).getComponents()) {
+                changeFont(child, font);
+            }
         }
-
-    }*/
+    }
+    
+    public void resizeColumnWidth(JTable table) {
+        final TableColumnModel columnModel = table.getColumnModel();
+        for (int column = 0; column < table.getColumnCount(); column++) {
+            int width = 100; // Min width
+            for (int row = 0; row < table.getRowCount(); row++) {
+                TableCellRenderer renderer = table.getCellRenderer(row, column);
+                Component comp = table.prepareRenderer(renderer, row, column);
+                width = Math.max(comp.getPreferredSize().width +1 , width);
+            }
+            if(width > 400)
+                width=400;
+            columnModel.getColumn(column).setPreferredWidth(width);
+        }
+    }
 
     class Vehicles {
 
@@ -122,9 +177,7 @@ public class InventoryManagementScreen extends JFrame {
         Vehicles() {
         }
 
-        public void addData(String id, String webId, Category category, Integer year, String make, String model, String trim, String bodyType, float price,String photo) {
-            Vehicle vehicle = new Vehicle();
-            vehicle.setAllDetails(id, webId, category, year, make, model, trim, bodyType, price, photo);
+        public void addData(Vehicle vehicle) {
             data.add(vehicle);
         }
 
@@ -132,47 +185,53 @@ public class InventoryManagementScreen extends JFrame {
             return data.get(row);
         }
 
+        public void removeData(int row){
+            data.remove(row);
+        }
+
+        public void removeAll() {
+            data.removeAllElements();
+        }
+
+        public void changeData(int row, Vehicle vehicle) {
+            data.set(row, vehicle);
+        }
+
     }
 
     class dealerModel extends AbstractTableModel {
 
-        private Vehicles vehicles;
-        private String[] name = {"Id","WebId", "Category","Year", "Make", "Model", "Trim", "Bodytype", "Price","Photo"};
+        private Vehicles vehicle;
+        private String[] name = {"Id", "Category", "Year", "Make", "Model", "Bodytype", "Price"};
 
-        dealerModel(Vehicles vehicles) {
-            this.vehicles = vehicles;
+        dealerModel(Vehicles vehicle) {
+            this.vehicle = vehicle;
         }
 
         public int getRowCount() {
-            return vehicles.data.size();
+            return vehicle.data.size();
         }
 
         public int getColumnCount() {
-            return 10;
+            return 7;
         }
 
         public Object getValueAt(int row, int col) {
-            Vehicle vehicle = vehicles.showData(row);
+            Vehicle veh = vehicle.showData(row);
             if (col == 0) {
-                return vehicle.getId();
+                return veh.getId();
             } else if (col == 1) {
-                return vehicle.getWebId();
-            } else  if (col == 2) {
-                return vehicle.getCategory();
-            }else if (col == 3) {
-                return vehicle.getYear();
+                return veh.getCategory();
+            } else if (col == 2) {
+                return veh.getYear();
+            } else if (col == 3) {
+                return veh.getMake();
             } else if (col == 4) {
-                return vehicle.getMake();
+                return veh.getModel();
             } else if (col == 5) {
-                return vehicle.getModel();
-            } else if (col == 6) {
-                return vehicle.getTrim();
-            } else  if (col == 7) {
-                return vehicle.getBodyType();
-            }else  if (col == 8) {
-                return vehicle.getPrice();
-            }else {
-            	return vehicle.getPhoto();
+                return veh.getBodyType();
+            } else {
+                return veh.getPrice();
             }
         }
 
@@ -196,6 +255,6 @@ public class InventoryManagementScreen extends JFrame {
     public static void main(String[] args) {
 
 
-        new InventoryManagementScreen("aj-dohmann");
+        new InventoryManagementScreen();
     }
 }
