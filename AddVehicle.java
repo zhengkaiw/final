@@ -3,6 +3,8 @@ package com.neu.jan17.UI;
 import javax.swing.*;
 
 import com.neu.jan17.data.Category;
+import com.neu.jan17.data.Inventory;
+import com.neu.jan17.data.Vehicle;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -19,16 +21,22 @@ public class AddVehicle extends JFrame {
 	private JTextField idText, webIdText, yearText, makeText, modelText, trimText, typeText, priceText, photoText;
 	private JButton clearButton, confirmButton;
 
-	public AddVehicle() {
-		createComponents();
+	public AddVehicle(InventoryManagementScreen parent) {
+		createComponents1(parent);
 		addComponents();
 		createLayout();
-		addActionListener();
+		display();
+	}
+
+	public AddVehicle(InventoryManagementScreen parent, Vehicle vehicle, int row){
+		createComponents2(parent, vehicle, row);
+		addComponents();
+		createLayout();
 		display();
 	}
 
 	@SuppressWarnings("static-access")
-	public void createComponents() {
+	public void createComponents1(InventoryManagementScreen parent) {
 
 		panel = new JPanel();
 		headPanel = new JPanel();
@@ -58,9 +66,95 @@ public class AddVehicle extends JFrame {
 
 		categoryCB = new JComboBox<Category>(category.values());
 
-		clearButton = new JButton(" Clear ");
+		clearButton = new JButton("Clear");
+		clearButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				idText.setText("");
+				webIdText.setText("");
+				categoryCB.setSelectedItem((Category)Category.NEW);
+				yearText.setText("");
+				makeText.setText("");
+				modelText.setText("");
+				trimText.setText("");
+				typeText.setText("");
+				priceText.setText("");
+				photoText.setText("");
+			}
+		});
 		confirmButton = new JButton("Confirm");
-		
+		confirmButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Vehicle v = new Vehicle();
+				v.setAllDetails(idText.getText(),webIdText.getText(),(Category)categoryCB.getSelectedItem(),Integer.parseInt(yearText.getText()),makeText.getText(),modelText.getText(),trimText.getText(),typeText.getText(),Float.parseFloat(priceText.getText()),photoText.getText());
+				parent.ve.addData(v);
+				parent.repaint();
+				dispose();
+			}
+		});
+	}
+
+	public void createComponents2(InventoryManagementScreen parent, Vehicle vehicle, int row) {
+
+		panel = new JPanel();
+		headPanel = new JPanel();
+		bottomPanel=new JPanel();
+
+		headline = new JLabel("EDIT VEHICLE");
+		idLabel = new JLabel("ID");
+		webIdLabel = new JLabel("WebId");
+		categoryLabel = new JLabel("Category");
+		yearLabel = new JLabel("Year");
+		makeLabel = new JLabel("Make");
+		modelLabel = new JLabel("Model");
+		trimLabel = new JLabel("Trim");
+		typeLabel = new JLabel("BodyType");
+		priceLabel = new JLabel("Price");
+		photoLabel = new JLabel("Photo URL");
+
+		idText = new JTextField(5);
+		idText.setText(vehicle.getId());
+		webIdText = new JTextField(5);
+		webIdText.setText(vehicle.getWebId());
+		yearText = new JTextField(5);
+		yearText.setText(String.valueOf(vehicle.getYear()));
+		makeText = new JTextField(5);
+		makeText.setText(vehicle.getMake());
+		modelText = new JTextField(5);
+		modelText.setText(vehicle.getModel());
+		trimText = new JTextField(5);
+		trimText.setText(vehicle.getTrim());
+		typeText = new JTextField(5);
+		typeText.setText(vehicle.getBodyType());
+		priceText = new JTextField(5);
+		priceText.setText(String.valueOf(vehicle.getPrice()));
+		photoText = new JTextField(5);
+		photoText.setText(vehicle.getPhoto());
+
+		categoryCB = new JComboBox<Category>(category.values());
+		categoryCB.setSelectedItem(vehicle.getCategory());
+
+		clearButton = new JButton("Delete");
+		clearButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				parent.ve.removeData(row);
+				parent.repaint();
+				dispose();
+			}
+		});
+		confirmButton = new JButton("Confirm");
+		confirmButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Vehicle v = new Vehicle();
+				v.setAllDetails(idText.getText(),webIdText.getText(),(Category)categoryCB.getSelectedItem(),Integer.parseInt(yearText.getText()),makeText.getText(),modelText.getText(),trimText.getText(),typeText.getText(),Float.parseFloat(priceText.getText()),photoText.getText());
+				parent.ve.changeData(row, v);
+				parent.repaint();
+				dispose();
+			}
+		});
 	}
 
 	public void addComponents() {
@@ -105,47 +199,24 @@ public class AddVehicle extends JFrame {
 		GridLayout grid = new GridLayout(0,2);
 		FlowLayout flow=new FlowLayout();
 		panel.setLayout(grid);
-		panel.setBackground(Color.WHITE);
 		bottomPanel.setLayout(flow);
 		
+		panel.setBorder(BorderFactory.createEmptyBorder(20, 100, 20, 100));
+		headPanel.setBorder(BorderFactory.createEmptyBorder(20, 100, 20, 100));
+		bottomPanel.setBorder(BorderFactory.createEmptyBorder(20, 100, 80, 100));
 
-		Font f1 = new Font("Meiryo UI",Font.PLAIN, 20);
-		Font f2 = new Font("Meiryo UI", Font.PLAIN, 40);
-		Font f3 = new Font("Meiryo UI", Font.PLAIN, 30);
+		Font f1 = new Font("Meiryo UI",Font.PLAIN, 15);
+		Font f2 = new Font("Meiryo UI", Font.PLAIN, 25);
+		Font f3 = new Font("Meiryo UI", Font.PLAIN, 20);
+		
 		changeFont(con,f1);
-		
-		//headline.setForeground(Color.RED);
 		headline.setFont(f2);
-		
 		categoryCB.setBackground(Color.WHITE);
-		
-		clearButton.setBackground(Color.RED);
-		clearButton.setForeground(Color.WHITE);
 		clearButton.setFont(f3);
-
-		confirmButton.setBackground(Color.RED);
-		confirmButton.setForeground(Color.WHITE);
 		confirmButton.setFont(f3);
 
-
-
 	}
 
-
-
-	public void addActionListener() {
-		clearButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				yearText.setText("");
-				makeText.setText("");
-				modelText.setText("");
-				trimText.setText("");
-				typeText.setText("");
-				priceText.setText("");
-			}
-		});
-	}
-	
 	public void changeFont(Component component, Font font) {
 
 		component.setFont(font);
@@ -158,13 +229,9 @@ public class AddVehicle extends JFrame {
 
 	public void display() {
 
-		setSize(800, 800);
+		setSize(700, 700);
 		setVisible(true);
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	}
 
-	public static void main(String[] args) {
-		new AddVehicle();
 	}
 
 }
